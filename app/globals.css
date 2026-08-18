@@ -1,0 +1,280 @@
+@import "tailwindcss";
+
+/* Self-hosted fonts (no external font CDN available in this environment) */
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+
+:root {
+  /* ---------------------------------------------------------------------
+     PUBLIC SITE — light-first, clean professional (blue / cyan)
+     --------------------------------------------------------------------- */
+  --pub-bg: #ffffff;
+  --pub-bg-elevated: #f8fafc;
+  --pub-surface: #ffffff;
+  --pub-surface-2: #f1f5f9;
+  --pub-border: #e2e8f0;
+  --pub-border-soft: #edf2f7;
+  --pub-text: #0f172a;
+  --pub-text-muted: #64748b;
+  --pub-text-faint: #94a3b8;
+  --pub-accent: #2563eb;
+  --pub-accent-2: #06b6d4;
+  --pub-accent-soft: rgba(37, 99, 235, 0.08);
+  --pub-terminal-green: #16a34a;
+  --pub-danger: #dc2626;
+
+  /* ---------------------------------------------------------------------
+     ADMIN DASHBOARD — light-first, Apple/Linear/Notion inspired
+     --------------------------------------------------------------------- */
+  --adm-bg: #f6f7f9;
+  --adm-surface: #ffffff;
+  --adm-surface-2: #fbfbfc;
+  --adm-border: #e6e8ec;
+  --adm-text: #14161a;
+  --adm-text-muted: #6b7280;
+  --adm-accent: #4f46e5;
+  --adm-accent-2: #06b6d4;
+  --adm-accent-soft: #eef0ff;
+  --adm-danger: #dc2626;
+  --adm-success: #16a34a;
+  --adm-warning: #d97706;
+}
+
+/* ---------------------------------------------------------------------
+   PUBLIC SITE — Dark Mode (opt-in). Add class="dark" to <html> or <body>
+   to restore the original terminal / cybersecurity look.
+   --------------------------------------------------------------------- */
+.dark {
+  --pub-bg: #05070b;
+  --pub-bg-elevated: #080b11;
+  --pub-surface: #0c1119;
+  --pub-surface-2: #111826;
+  --pub-border: #1c2432;
+  --pub-border-soft: #151b26;
+  --pub-text: #e8edf5;
+  --pub-text-muted: #8993a6;
+  --pub-text-faint: #566073;
+  --pub-accent: #29d8f0;
+  --pub-accent-2: #4f8cf7;
+  --pub-accent-soft: rgba(41, 216, 240, 0.1);
+  --pub-terminal-green: #4ade80;
+  --pub-danger: #f5657a;
+}
+
+@theme inline {
+  --color-pub-bg: var(--pub-bg);
+  --color-pub-surface: var(--pub-surface);
+  --color-pub-surface-2: var(--pub-surface-2);
+  --color-pub-border: var(--pub-border);
+  --color-pub-text: var(--pub-text);
+  --color-pub-text-muted: var(--pub-text-muted);
+  --color-pub-accent: var(--pub-accent);
+  --color-pub-accent-2: var(--pub-accent-2);
+  --color-pub-terminal-green: var(--pub-terminal-green);
+
+  --color-adm-bg: var(--adm-bg);
+  --color-adm-surface: var(--adm-surface);
+  --color-adm-border: var(--adm-border);
+  --color-adm-text: var(--adm-text);
+  --color-adm-text-muted: var(--adm-text-muted);
+  --color-adm-accent: var(--adm-accent);
+  --color-adm-accent-2: var(--adm-accent-2);
+
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  --font-arabic: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  border-color: var(--pub-border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--pub-bg);
+  color: var(--pub-text);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-arabic);
+}
+
+/* Thin, quiet scrollbar for the dark public site */
+.pub-scope ::-webkit-scrollbar {
+  width: 10px;
+}
+.pub-scope ::-webkit-scrollbar-track {
+  background: var(--pub-bg);
+}
+.pub-scope ::-webkit-scrollbar-thumb {
+  background: var(--pub-border);
+  border-radius: 999px;
+}
+.pub-scope ::-webkit-scrollbar-thumb:hover {
+  background: var(--pub-accent);
+}
+
+/* Visible keyboard focus everywhere (accessibility floor) */
+:focus-visible {
+  outline: 2px solid var(--pub-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.adm-scope :focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+}
+
+/* Signature element: animated scan-line grid used in the hero background */
+@keyframes scan-sweep {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.scan-grid {
+  background-image: url('/hero-mesh.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+.scan-line {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(37, 99, 235, 0.06) 45%,
+    rgba(37, 99, 235, 0.14) 50%,
+    rgba(37, 99, 235, 0.06) 55%,
+    transparent 100%
+  );
+  animation: scan-sweep 8s linear infinite;
+}
+
+.dark .scan-grid {
+  background-image:
+    linear-gradient(to right, rgba(41, 216, 240, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(41, 216, 240, 0.06) 1px, transparent 1px);
+}
+
+.dark .scan-line {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(41, 216, 240, 0.08) 45%,
+    rgba(41, 216, 240, 0.18) 50%,
+    rgba(41, 216, 240, 0.08) 55%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line {
+    animation: none;
+    opacity: 0.4;
+  }
+}
+
+@keyframes blink-cursor {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.cursor-blink {
+  animation: blink-cursor 1s step-start infinite;
+}
+
+/* Rich text content rendering (public + admin preview) */
+.prose-content h1,
+.prose-content h2,
+.prose-content h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.prose-content p {
+  margin-bottom: 1em;
+  line-height: 1.75;
+}
+.prose-content ul,
+.prose-content ol {
+  margin: 1em 0 1em 1.5em;
+}
+[dir="rtl"] .prose-content ul,
+[dir="rtl"] .prose-content ol {
+  margin-left: 0;
+  margin-right: 1.5em;
+}
+.prose-content ul {
+  list-style: disc;
+}
+.prose-content ol {
+  list-style: decimal;
+}
+.prose-content a {
+  color: var(--pub-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-content blockquote {
+  border-inline-start: 3px solid var(--pub-accent);
+  padding-inline-start: 1em;
+  color: var(--pub-text-muted);
+  font-style: italic;
+  margin: 1em 0;
+}
+.prose-content code {
+  font-family: var(--font-mono);
+  background: var(--pub-surface-2);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.adm-scope .prose-content a {
+  color: var(--adm-accent);
+}
+.adm-scope .prose-content blockquote {
+  border-inline-start-color: var(--adm-accent);
+}

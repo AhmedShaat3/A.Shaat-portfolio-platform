@@ -1,0 +1,23 @@
+import type { InferSelectModel } from "drizzle-orm";
+import type * as schema from "@/db/schema";
+
+export type Profile = InferSelectModel<typeof schema.profile>;
+export type SiteSettings = InferSelectModel<typeof schema.siteSettings>;
+export type NavigationItem = InferSelectModel<typeof schema.navigationItems>;
+export type Section = InferSelectModel<typeof schema.sections>;
+export type SocialLink = InferSelectModel<typeof schema.socialLinks>;
+export type Skill = InferSelectModel<typeof schema.skills>;
+export type Experience = InferSelectModel<typeof schema.experiences>;
+export type Education = InferSelectModel<typeof schema.education>;
+export type Project = InferSelectModel<typeof schema.projects>;
+export type ProjectImage = InferSelectModel<typeof schema.projectImages>;
+export type Certificate = InferSelectModel<typeof schema.certificates>;
+export type Award = InferSelectModel<typeof schema.awards>;
+export type Testimonial = InferSelectModel<typeof schema.testimonials>;
+export type GalleryImage = InferSelectModel<typeof schema.galleryImages>;
+export type Statistic = InferSelectModel<typeof schema.statistics>;
+export type Media = InferSelectModel<typeof schema.media>;
+export type ContactMessage = InferSelectModel<typeof schema.contactMessages>;
+export type ContentBlock = InferSelectModel<typeof schema.contentBlocks>;
+export type User = InferSelectModel<typeof schema.users>;
+export type ContentMap = Record<string, string>;
