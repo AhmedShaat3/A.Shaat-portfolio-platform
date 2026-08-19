@@ -26,6 +26,7 @@ import { TestimonialsSection } from "@/components/public/testimonials-section";
 import { StatsSection } from "@/components/public/stats-section";
 import { ContactSection } from "@/components/public/contact-section";
 
+// يمنع التخزين المؤقت تماماً ويجبر السيرفر على التحديث اللحظي مع كل طلب
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -132,7 +133,6 @@ export default async function HomePage({
   return (
     <>
       {sections.map((s) => {
-        // تحويل المعرّف إلى أحرف صغيرة وإزالة أي فراغات زائدة
         const key = String(s.id).toLowerCase().trim();
         return renderers[key]?.();
       })}
