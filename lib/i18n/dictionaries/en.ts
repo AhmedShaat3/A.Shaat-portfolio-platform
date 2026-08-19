@@ -72,7 +72,7 @@ const en = {
   footer: {
     rights: "All rights reserved.",
     backToTop: "Back to top",
-    builtWith: "Built with Next.js",
+    
   },
   common: {
     loading: "Loading...",

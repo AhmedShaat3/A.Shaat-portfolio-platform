@@ -1,3 +1,5 @@
+import "dotenv/config";
+
 import { db, client } from "./client";
 import {
   users,

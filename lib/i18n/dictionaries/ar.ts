@@ -74,7 +74,7 @@ const ar: Dictionary = {
   footer: {
     rights: "جميع الحقوق محفوظة.",
     backToTop: "العودة للأعلى",
-    builtWith: "بُني باستخدام Next.js",
+    
   },
   common: {
     loading: "جاري التحميل...",
