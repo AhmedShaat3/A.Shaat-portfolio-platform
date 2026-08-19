@@ -21,7 +21,7 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
       ...rest,
       typingPhrases: JSON.stringify(typingPhrases),
       values: JSON.stringify(values),
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(),  // ✅ تم التعديل
     })
     .where(eq(profile.id, "profile"));
 
@@ -38,7 +38,7 @@ export async function updateProfileImages(input: {
   await requireAdmin();
   await db
     .update(profile)
-    .set({ ...input, updatedAt: new Date().toISOString() })
+    .set({ ...input, updatedAt: new Date() })  // ✅ تم التعديل
     .where(eq(profile.id, "profile"));
   revalidatePublicSite();
   return { ok: true };
@@ -51,7 +51,7 @@ export async function updateSiteSettings(input: unknown): Promise<ActionResult> 
 
   await db
     .update(siteSettings)
-    .set({ ...parsed.data, updatedAt: new Date().toISOString() })
+    .set({ ...parsed.data, updatedAt: new Date() })  // ✅ تم التعديل
     .where(eq(siteSettings.id, "settings"));
 
   await logActivity({ userId: user.id, action: "settings.updated" });
@@ -67,7 +67,7 @@ export async function updateSiteAssets(input: {
   await requireAdmin();
   await db
     .update(siteSettings)
-    .set({ ...input, updatedAt: new Date().toISOString() })
+    .set({ ...input, updatedAt: new Date() })  // ✅ تم التعديل
     .where(eq(siteSettings.id, "settings"));
   revalidatePublicSite();
   return { ok: true };
@@ -96,7 +96,7 @@ export async function updateContentBlock(
   if (existing) {
     await db
       .update(contentBlocks)
-      .set({ value, updatedAt: new Date().toISOString() })
+      .set({ value, updatedAt: new Date() })  // ✅ تم التعديل
       .where(eq(contentBlocks.id, existing.id));
   } else {
     await db.insert(contentBlocks).values({ id: nanoid(), section, key, locale, value });
@@ -118,8 +118,8 @@ export async function publishSite(): Promise<ActionResult> {
     .update(siteSettings)
     .set({
       publishedVersion: nextVersion,
-      lastPublishedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      lastPublishedAt: new Date(),  // ✅ تم التعديل
+      updatedAt: new Date(),        // ✅ تم التعديل
     })
     .where(eq(siteSettings.id, "settings"));
 

@@ -2,7 +2,7 @@ import "server-only";
 
 import { db } from "@/db/client";
 import { eq } from "drizzle-orm";
-import type { SQLiteTable } from "drizzle-orm/sqlite-core";
+import type { PgTable } from "drizzle-orm/pg-core";
 import { nanoid } from "@/lib/utils/id";
 import {
   requireAdmin,
@@ -12,27 +12,6 @@ import {
 import { logActivity } from "@/lib/activity";
 import { revalidatePath } from "next/cache";
 import type { ZodType } from "zod";
-
-/**
- * Converts JavaScript arrays into JSON strings before storing them
- * in SQLite TEXT columns.
- *
- * Example:
- * ["Python", "AWS", "Linux"]
- *
- * becomes:
- * '["Python","AWS","Linux"]'
- */
-function serializeDbValues(
-  values: Record<string, unknown>
-): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(values).map(([key, value]) => [
-      key,
-      Array.isArray(value) ? JSON.stringify(value) : value,
-    ])
-  );
-}
 
 /**
  * Builds create/update/delete/reorder server actions for a straightforward
@@ -49,7 +28,7 @@ function serializeDbValues(
  * - Other CRUD-based entities
  */
 export function createCrudActions<
-  TTable extends SQLiteTable & { id: unknown }
+  TTable extends PgTable & { id: unknown }
 >(
   table: TTable,
   schema: ZodType,
@@ -82,10 +61,8 @@ export function createCrudActions<
 
     const id = nanoid();
 
-    // Convert arrays to JSON strings before inserting into SQLite.
-    const values = serializeDbValues(
-      parsed.data as Record<string, unknown>
-    );
+    // PostgreSQL handles arrays and JSON natively - no serialization needed
+    const values = parsed.data as Record<string, unknown>;
 
     await db.insert(t).values({
       id,
@@ -128,10 +105,8 @@ export function createCrudActions<
       };
     }
 
-    // Convert arrays to JSON strings before updating SQLite.
-    const values = serializeDbValues(
-      parsed.data as Record<string, unknown>
-    );
+    // PostgreSQL handles arrays and JSON natively - no serialization needed
+    const values = parsed.data as Record<string, unknown>;
 
     await db
       .update(t)

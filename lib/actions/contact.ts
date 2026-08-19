@@ -1,9 +1,13 @@
 "use server";
 
 import { db } from "@/db/client";
-import { contactMessages } from "@/db/schema";
-import { contactMessageSchema } from "@/lib/validation/schemas";
+import { profile, siteSettings, contentBlocks, contactMessages } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { nanoid } from "@/lib/utils/id";
+import { profileSchema, siteSettingsSchema, contactMessageSchema } from "@/lib/validation/schemas";
+import { requireAdmin, revalidatePublicSite, type ActionResult } from "@/lib/actions/admin/helpers";
+import { logActivity } from "@/lib/activity";
+import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 export type ContactFormState = {
@@ -11,9 +15,130 @@ export type ContactFormState = {
   error?: string;
 };
 
-// Very small in-memory rate limiter: max 5 submissions / 10 min / IP.
-// Resets on server restart — fine for a single-instance deployment. For a
-// multi-instance production deployment, back this with Redis or similar.
+// --- PROFILE FUNCTIONS -------------------------------------------------
+export async function updateProfile(input: unknown): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = profileSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  const { typingPhrases, values, ...rest } = parsed.data;
+  await db
+    .update(profile)
+    .set({
+      ...rest,
+      typingPhrases: JSON.stringify(typingPhrases),
+      values: JSON.stringify(values),
+      updatedAt: new Date(),  // ✅ تم التعديل
+    })
+    .where(eq(profile.id, "profile"));
+
+  await logActivity({ userId: user.id, action: "profile.updated" });
+  revalidatePath("/admin/content");
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+export async function updateProfileImages(input: {
+  avatarUrl?: string;
+  resumeUrl?: string;
+}): Promise<ActionResult> {
+  await requireAdmin();
+  await db
+    .update(profile)
+    .set({ ...input, updatedAt: new Date() })  // ✅ تم التعديل
+    .where(eq(profile.id, "profile"));
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+// --- SITE SETTINGS FUNCTIONS -------------------------------------------
+export async function updateSiteSettings(input: unknown): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const parsed = siteSettingsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  await db
+    .update(siteSettings)
+    .set({ ...parsed.data, updatedAt: new Date() })  // ✅ تم التعديل
+    .where(eq(siteSettings.id, "settings"));
+
+  await logActivity({ userId: user.id, action: "settings.updated" });
+  revalidatePath("/admin/settings");
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+export async function updateSiteAssets(input: {
+  faviconUrl?: string;
+  ogImageUrl?: string;
+}): Promise<ActionResult> {
+  await requireAdmin();
+  await db
+    .update(siteSettings)
+    .set({ ...input, updatedAt: new Date() })  // ✅ تم التعديل
+    .where(eq(siteSettings.id, "settings"));
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+// --- CONTENT BLOCK FUNCTIONS -------------------------------------------
+export async function updateContentBlock(
+  section: string,
+  key: string,
+  locale: "en" | "ar",
+  value: string
+): Promise<ActionResult> {
+  const user = await requireAdmin();
+
+  const [existing] = await db
+    .select()
+    .from(contentBlocks)
+    .where(
+      and(
+        eq(contentBlocks.section, section),
+        eq(contentBlocks.key, key),
+        eq(contentBlocks.locale, locale)
+      )
+    )
+    .limit(1);
+
+  if (existing) {
+    await db
+      .update(contentBlocks)
+      .set({ value, updatedAt: new Date() })  // ✅ تم التعديل
+      .where(eq(contentBlocks.id, existing.id));
+  } else {
+    await db.insert(contentBlocks).values({ id: nanoid(), section, key, locale, value });
+  }
+
+  await logActivity({ userId: user.id, action: "content.updated", entityType: "content_block", entityId: `${section}.${key}.${locale}` });
+  revalidatePath("/admin/content");
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+// --- PUBLISH SITE ------------------------------------------------------
+export async function publishSite(): Promise<ActionResult> {
+  const user = await requireAdmin();
+  const [current] = await db.select().from(siteSettings).limit(1);
+  const [major, minor] = (current?.publishedVersion ?? "1.0").split(".").map(Number);
+  const nextVersion = `${major}.${minor + 1}`;
+
+  await db
+    .update(siteSettings)
+    .set({
+      publishedVersion: nextVersion,
+      lastPublishedAt: new Date(),  // ✅ تم التعديل
+      updatedAt: new Date(),        // ✅ تم التعديل
+    })
+    .where(eq(siteSettings.id, "settings"));
+
+  await logActivity({ userId: user.id, action: "site.published", details: nextVersion });
+  revalidatePublicSite();
+  return { ok: true };
+}
+
+// --- CONTACT FORM ------------------------------------------------------
 const submissionLog = new Map<string, number[]>();
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_SUBMISSIONS = 5;
@@ -37,7 +162,7 @@ export async function submitContactForm(
     email: formData.get("email")?.toString() ?? "",
     subject: formData.get("subject")?.toString() ?? "",
     message: formData.get("message")?.toString() ?? "",
-    company: formData.get("company")?.toString() ?? "", // honeypot
+    company: formData.get("company")?.toString() ?? "",
   };
 
   const parsed = contactMessageSchema.safeParse(raw);
@@ -45,15 +170,12 @@ export async function submitContactForm(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
-  // Honeypot tripped — silently succeed so bots don't learn anything, but
-  // never write the message.
   if (raw.company) {
     return { ok: true };
   }
 
   const hdrs = await headers();
-  const ip =
-    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
   if (isRateLimited(ip)) {
     return { ok: false, error: "Too many messages sent. Please try again later." };

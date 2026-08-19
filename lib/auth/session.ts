@@ -15,7 +15,7 @@ function hashToken(token: string) {
 export async function createSession(userId: string) {
   const rawToken = randomBytes(32).toString("hex");
   const tokenHash = hashToken(rawToken);
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS).toISOString();
+  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);  // ✅ تم التعديل
 
   const hdrs = await headers();
 

@@ -23,7 +23,6 @@ export async function loginWithPassword(
     .where(eq(users.email, email.toLowerCase().trim()))
     .limit(1);
 
-  // Constant-ish response to avoid leaking whether the email exists.
   if (!user) {
     return { ok: false, error: "Invalid email or password." };
   }
@@ -48,9 +47,9 @@ export async function loginWithPassword(
       .set({
         failedLoginAttempts: locked ? 0 : attempts,
         lockedUntil: locked
-          ? new Date(Date.now() + LOCKOUT_MS).toISOString()
+          ? new Date(Date.now() + LOCKOUT_MS)  // ✅ تم التعديل
           : null,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date(),  // ✅ تم التعديل
       })
       .where(eq(users.id, user.id));
     return { ok: false, error: "Invalid email or password." };
@@ -61,8 +60,8 @@ export async function loginWithPassword(
     .set({
       failedLoginAttempts: 0,
       lockedUntil: null,
-      lastLoginAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      lastLoginAt: new Date(),  // ✅ تم التعديل
+      updatedAt: new Date(),    // ✅ تم التعديل
     })
     .where(eq(users.id, user.id));
 

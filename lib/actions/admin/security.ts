@@ -27,7 +27,7 @@ export async function changePassword(
   const passwordHash = await hashPassword(newPassword);
   await db
     .update(users)
-    .set({ passwordHash, updatedAt: new Date().toISOString() })
+    .set({ passwordHash, updatedAt: new Date() })  // ✅ تم التعديل
     .where(eq(users.id, admin.id));
 
   // Invalidate every other session for this user (keep the current one).
