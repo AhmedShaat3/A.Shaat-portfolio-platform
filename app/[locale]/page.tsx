@@ -26,6 +26,10 @@ import { TestimonialsSection } from "@/components/public/testimonials-section";
 import { StatsSection } from "@/components/public/stats-section";
 import { ContactSection } from "@/components/public/contact-section";
 
+// يمنع التخزين المؤقت تماماً ويجبر السيرفر على التحديث اللحظي مع كل طلب
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage({
   params,
 }: {
@@ -128,3 +132,14 @@ export default async function HomePage({
 
   return <>{sections.map((s) => renderers[s.id]?.())}</>;
 }
+```[cite: 2]
+
+**خطوات التنفيذ والأمر السريع رفع الملف:**
+
+1. احفظ التعديلات في الملف داخل VS Code.
+2. ارفع التعديلات مباشرة عبر موجه الأوامر (CMD) بتنفيذ الأوامر التالية:
+
+```cmd
+git add app/[locale]/page.tsx
+git commit -m "fix: disable static caching to show visible sections dynamically"
+git push
