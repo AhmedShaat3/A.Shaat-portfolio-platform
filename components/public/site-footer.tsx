@@ -76,9 +76,6 @@ export function SiteFooter({
           </div>
         </div>
 
-        <p className="mt-8 font-mono text-xs text-pub-text-faint">
-          {dict.footer.builtWith}
-        </p>
       </div>
     </footer>
   );
