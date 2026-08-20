@@ -4,8 +4,13 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { UploadCloud, X, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
-// ✅ تعديل مهم: تم تصحيح المسار ليتوافق مع ملف التصدير الرئيسي
 import type { StorageFolder } from "@/lib/storage";
+
+// Define the expected API response type for better type safety
+interface UploadResponse {
+  media: { url: string };
+  error?: string;
+}
 
 export function ImageUploader({
   value,
@@ -31,23 +36,29 @@ export function ImageUploader({
       formData.append("folder", folder);
 
       const res = await fetch("/api/media", { method: "POST", body: formData });
+      
+      // 1. Try to parse JSON safely
+      let data: UploadResponse | null = null;
+      try {
+        data = await res.json();
+      } catch {
+        // If JSON parsing fails, handle it in the error flow below
+      }
 
-      // ✅ تحسين: استخدام res.json() مباشرة بدلاً من قراءة النص وتحويله
+      // 2. Handle HTTP errors
       if (!res.ok) {
-        let errorMessage = "Upload failed.";
-        try {
-          const errorJson = await res.json();
-          errorMessage = errorJson.error || errorMessage;
-        } catch {
-          // إذا لم يكن الرد JSON صالحاً (مثلاً خطأ 413 من السيرفر مباشرة بدون JSON)
-          if (res.status === 413) {
-            errorMessage = "File size exceeds server limits (4.5MB max on Vercel).";
-          }
+        let errorMessage = data?.error || `Upload failed (Status: ${res.status})`;
+        if (res.status === 413) {
+          errorMessage = "File size exceeds server limits (4.5MB max on Vercel).";
         }
         throw new Error(errorMessage);
       }
 
-      const data = await res.json();
+      // 3. Validate the successful response structure
+      if (!data?.media?.url) {
+        throw new Error("Invalid server response: Missing media URL.");
+      }
+
       onChange(data.media.url);
       toast.success("File uploaded.");
     } catch (err) {
@@ -74,7 +85,7 @@ export function ImageUploader({
             type="button"
             onClick={() => onChange("")}
             aria-label="Remove file"
-            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+            className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 transition-colors"
           >
             <X size={14} />
           </button>
