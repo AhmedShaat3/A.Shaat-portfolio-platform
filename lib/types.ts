@@ -1,7 +1,7 @@
 import type { InferSelectModel } from "drizzle-orm";
 import type * as schema from "@/db/schema";
 
-// --- النماذج الأساسية ---
+// --- النماذج الأساسية القادمة المباشرة من قاعدة البيانات ---
 export type Profile = InferSelectModel<typeof schema.profile>;
 export type SiteSettings = InferSelectModel<typeof schema.siteSettings>;
 export type NavigationItem = InferSelectModel<typeof schema.navigationItems>;
@@ -21,27 +21,24 @@ export type ContactMessage = InferSelectModel<typeof schema.contactMessages>;
 export type ContentBlock = InferSelectModel<typeof schema.contentBlocks>;
 export type User = InferSelectModel<typeof schema.users>;
 
-// --- النماذج المخصصة (التي تحتوي على تحويلات) ---
+// --- النماذج المخصصة للواجهات ---
 
 /**
- * نموذج المشروع المعدل.
- * تم حذف حقل 'technologies' الأساسي من قاعدة البيانات،
- * واستبداله بحقل آمن من النوع 'string[]' لضمان عدم حدوث أعطال
- * أثناء تحليل JSON في الواجهة الأمامية.
+ * نموذج المشروع الأصلي لقاعدة البيانات ولوحة التحكم (Admin)
+ * حيث تكون التقنيات مسجلة كنص متصل string
  */
-export type Project = Omit<InferSelectModel<typeof schema.projects>, "technologies"> & {
+export type AdminProject = InferSelectModel<typeof schema.projects>;
+
+/**
+ * نموذج المشروع المحلل والمخصص للعرض العام (Client Side)
+ * حيث يتم تحليل التقنيات مسبقاً وتحويلها إلى مصفوفة string[]
+ */
+export type Project = Omit<AdminProject, "technologies"> & {
   technologies: string[];
 };
 
-/**
- * خريطة المحتوى للترجمة والـ CMS.
- * تُستخدم في دالة safeParseJsonContent في public.ts
- */
 export type ContentMap = Record<string, string>;
 
-/**
- * نوع فرعي للإشارة إلى وجود صور إضافية للمشروع (يستخدم في getProjectBySlug)
- */
 export type ProjectWithImages = Project & {
   images: ProjectImage[];
 };

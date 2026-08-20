@@ -8,11 +8,12 @@ import { Button } from "./ui/fields";
 import { Card } from "./ui/card";
 import { ConfirmDialog } from "./ui/confirm-dialog";
 import { deleteProject, updateProject } from "@/lib/actions/admin/projects";
-import type { Project } from "@/lib/types";
+// ✅ استيراد AdminProject بدلاً من Project
+import type { AdminProject } from "@/lib/types";
 
-export function ProjectsList({ items }: { items: Project[] }) {
+export function ProjectsList({ items }: { items: AdminProject[] }) {
   const [list, setList] = useState(items);
-  const [deleting, setDeleting] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState<AdminProject | null>(null);
   const [pending, startTransition] = useTransition();
 
   function handleDelete() {
@@ -29,7 +30,7 @@ export function ProjectsList({ items }: { items: Project[] }) {
     });
   }
 
-  function togglePublished(project: Project) {
+  function togglePublished(project: AdminProject) {
     startTransition(async () => {
       const result = await updateProject(project.id, {
         title: project.title,
@@ -37,13 +38,20 @@ export function ProjectsList({ items }: { items: Project[] }) {
         shortDescription: project.shortDescription ?? "",
         fullDescription: project.fullDescription ?? "",
         category: project.category,
-        technologies: JSON.parse(project.technologies || "[]"),
+        technologies: project.technologies ?? "", // إرساله كنص كما هو
         mainImageUrl: project.mainImageUrl ?? "",
         githubUrl: project.githubUrl ?? "",
         liveUrl: project.liveUrl ?? "",
         featured: project.featured,
         status: project.status,
-        stats: JSON.parse(project.stats || "[]"),
+        // ✅ حماية حقل stats من كسر التطبيق باستخدام try/catch
+        stats: (() => {
+          try { 
+            return JSON.parse(project.stats || "[]"); 
+          } catch { 
+            return []; 
+          }
+        })(),
         challenges: project.challenges ?? "",
         solution: project.solution ?? "",
         results: project.results ?? "",
