@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { UploadCloud, X, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
-import type { StorageFolder } from "@/lib/storage/types";
+// ✅ تعديل مهم: تم تصحيح المسار ليتوافق مع ملف التصدير الرئيسي
+import type { StorageFolder } from "@/lib/storage";
 
 export function ImageUploader({
   value,
@@ -28,9 +29,25 @@ export function ImageUploader({
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folder", folder);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+
+      const res = await fetch("/api/media", { method: "POST", body: formData });
+
+      // ✅ تحسين: استخدام res.json() مباشرة بدلاً من قراءة النص وتحويله
+      if (!res.ok) {
+        let errorMessage = "Upload failed.";
+        try {
+          const errorJson = await res.json();
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          // إذا لم يكن الرد JSON صالحاً (مثلاً خطأ 413 من السيرفر مباشرة بدون JSON)
+          if (res.status === 413) {
+            errorMessage = "File size exceeds server limits (4.5MB max on Vercel).";
+          }
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed.");
       onChange(data.media.url);
       toast.success("File uploaded.");
     } catch (err) {

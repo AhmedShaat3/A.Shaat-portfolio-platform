@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { eq } from "drizzle-orm"; // تم إضافة الاستيراد هنا
+import { eq } from "drizzle-orm";
 import { getCurrentUser } from "@/lib/auth/session";
 import { storage, type StorageFolder } from "@/lib/storage";
 import { db } from "@/db/client";
@@ -130,13 +130,3 @@ export async function DELETE(request: NextRequest) {
 
   return NextResponse.json({ ok: true });
 }
-```[cite: 4]
-
----
-
-**أوامر الرفع عبر CMD:**
-
-```cmd
-git add app/api/media/route.ts
-git commit -m "fix: import eq from drizzle-orm in media route"
-git push
