@@ -51,17 +51,19 @@ export function Hero({
 }) {
   const { dict } = useI18n();
   
-  // ✅ FIX 1: Safe JSON Parsing (Prevents build/runtime crashes)
-  let phrases: string[] = [];
-  try {
-    phrases = profile?.typingPhrases ? JSON.parse(profile.typingPhrases) : [];
-  } catch (e) {
-    console.warn("Failed to parse typing phrases JSON");
-  }
+  // ✅ تحليل آمن للنصوص المقتبسة (يمنع انهيار الموقع)
+  const phrases: string[] = (() => {
+    if (!profile?.typingPhrases) return [];
+    try {
+      return JSON.parse(profile.typingPhrases);
+    } catch {
+      return [];
+    }
+  })();
   
   const typed = useTypingEffect(phrases);
 
-  // ✅ FIX 2: Extract avatar initials safely (Prevents "Cannot read properties of undefined")
+  // ✅ استخراج الأحرف الأولى بأمان
   const getInitials = () => {
     const name = profile?.fullName || "BB";
     const parts = name.trim().split(" ");
