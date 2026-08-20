@@ -13,11 +13,12 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
   
   // ✅ FIX: Safe JSON Parsing to prevent app/build crashes
   let tech: string[] = [];
-  try {
-    tech = project.technologies ? JSON.parse(project.technologies) : [];
-  } catch (e) {
-    // If JSON parsing fails (e.g. because it's an empty string), default to empty array silently
-    tech = [];
+  if (project.technologies) {
+    try {
+      tech = JSON.parse(project.technologies);
+    } catch {
+      tech = project.technologies.split(",").map((t) => t.trim());
+    }
   }
 
   // ✅ FIX: Provide a default safe value for text content

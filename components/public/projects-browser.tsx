@@ -6,6 +6,16 @@ import { ProjectCard } from "@/components/public/project-card";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Project } from "@/lib/types";
 
+// دالة آمنة لتحليل التقنيات سواء كانت JSON Array أو نص عادي مفصول بفاصلة
+function parseTechnologies(techStr?: string | null): string[] {
+  if (!techStr) return [];
+  try {
+    return JSON.parse(techStr);
+  } catch {
+    return techStr.split(",").map((item) => item.trim());
+  }
+}
+
 export function ProjectsBrowser({ projects }: { projects: Project[] }) {
   const { dict } = useI18n();
   const [query, setQuery] = useState("");
@@ -24,7 +34,7 @@ export function ProjectsBrowser({ projects }: { projects: Project[] }) {
         !q ||
         p.title.toLowerCase().includes(q) ||
         (p.shortDescription ?? "").toLowerCase().includes(q) ||
-        (JSON.parse(p.technologies || "[]") as string[]).some((t) =>
+        parseTechnologies(p.technologies).some((t) =>
           t.toLowerCase().includes(q)
         );
       return matchesCategory && matchesQuery;
