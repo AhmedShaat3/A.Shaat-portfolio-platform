@@ -3,6 +3,20 @@ import { SectionHeading } from "./section-heading";
 import { Reveal } from "./reveal";
 import type { Experience, ContentMap } from "@/lib/types";
 
+// دالة مساعدة آمنة لتحليل النص إلى مصفوفة
+// (تدعم سواء JSON صحيح أو نص مفصول بفواصل)
+function safeParseStringList(value?: string | null): string[] {
+  if (!value) return [];
+  
+  // 1. محاولة التحليل كـ JSON
+  try {
+    return JSON.parse(value);
+  } catch {
+    // 2. إذا فشل، نتعامل معه كنص مفصول بفواصل (مثل: "Python, Java")
+    return value.split(",").map((item) => item.trim());
+  }
+}
+
 function formatDate(value: string | null) {
   if (!value) return "Present";
   const [year, month] = value.split("-");
@@ -32,10 +46,10 @@ export function ExperienceSection({
         <div className="relative mt-12 space-y-10 ps-8">
           <div className="absolute inset-y-0 start-[7px] w-px bg-pub-border" />
           {experiences.map((exp, i) => {
-            const tech: string[] = exp.technologies ? JSON.parse(exp.technologies) : [];
-            const achievements: string[] = exp.achievements
-              ? JSON.parse(exp.achievements)
-              : [];
+            // ✅ تم استبدال JSON.parse بدالة safeParseStringList الآمنة
+            const tech = safeParseStringList(exp.technologies);
+            const achievements = safeParseStringList(exp.achievements);
+            
             return (
               <Reveal key={exp.id} delay={i * 0.08} className="relative">
                 <div className="absolute -start-8 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-pub-accent bg-pub-bg" />

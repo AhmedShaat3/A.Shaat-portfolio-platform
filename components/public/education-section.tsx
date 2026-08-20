@@ -3,6 +3,16 @@ import { Reveal } from "./reveal";
 import { GraduationCap } from "lucide-react";
 import type { Education, ContentMap } from "@/lib/types";
 
+// دالة مساعدة آمنة لتحليل النص إلى مصفوفة (تتعامل مع JSON والنص العادي)
+function safeParseStringList(value?: string | null): string[] {
+  if (!value) return [];
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value.split(",").map((item) => item.trim());
+  }
+}
+
 export function EducationSection({
   education,
   content,
@@ -24,7 +34,9 @@ export function EducationSection({
 
         <div className="mt-12 space-y-6">
           {education.map((ed, i) => {
-            const coursework: string[] = ed.coursework ? JSON.parse(ed.coursework) : [];
+            // ✅ تم استبدال JSON.parse بدالة safeParseStringList الآمنة
+            const coursework = safeParseStringList(ed.coursework);
+            
             return (
               <Reveal key={ed.id} delay={i * 0.08}>
                 <div className="flex flex-col gap-4 rounded-2xl border border-pub-border bg-pub-surface/50 p-6 sm:flex-row sm:items-start">
