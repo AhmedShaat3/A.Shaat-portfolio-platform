@@ -26,7 +26,6 @@ import { TestimonialsSection } from "@/components/public/testimonials-section";
 import { StatsSection } from "@/components/public/stats-section";
 import { ContactSection } from "@/components/public/contact-section";
 
-// يمنع التخزين المؤقت تماماً ويجبر السيرفر على التحديث اللحظي مع كل طلب
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -64,11 +63,16 @@ export default async function HomePage({
     getVisibleStatistics(),
   ]);
 
-  const contentBySection = Object.fromEntries(
-    await Promise.all(
-      sections.map(async (s) => [s.id, await getSectionContent(s.id, locale)] as const)
-    )
+  // ✅ جلب كافة نصوص الأقسام دفعة واحدة بشكل متوازي وأكثر أماناً
+  const sectionContentEntries = await Promise.all(
+    sections.map(async (s) => {
+      const sectionKey = String(s.id).toLowerCase().trim();
+      const content = await getSectionContent(sectionKey, locale);
+      return [sectionKey, content] as const;
+    })
   );
+
+  const contentBySection = Object.fromEntries(sectionContentEntries);
 
   const renderers: Record<string, () => React.ReactNode> = {
     hero: () => (

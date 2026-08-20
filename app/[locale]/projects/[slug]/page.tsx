@@ -38,11 +38,15 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
   recordProjectView(project.id);
 
-  const technologies: string[] = project.technologies
-    ? JSON.parse(project.technologies)
+  // ✅ التعديل هنا: project.technologies أصبحت string[] جاهزة ومحللة مسبقاً
+  const technologies: string[] = Array.isArray(project.technologies)
+    ? project.technologies
     : [];
+
   const stats: Array<{ label: string; value: string }> = project.stats
-    ? JSON.parse(project.stats)
+    ? typeof project.stats === "string"
+      ? JSON.parse(project.stats)
+      : project.stats
     : [];
 
   const jsonLd = {

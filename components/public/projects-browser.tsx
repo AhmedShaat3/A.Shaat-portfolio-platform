@@ -6,17 +6,27 @@ import { ProjectCard } from "@/components/public/project-card";
 import { useI18n } from "@/lib/i18n/provider";
 import type { Project } from "@/lib/types";
 
-// دالة آمنة لتحليل التقنيات سواء كانت JSON Array أو نص عادي مفصول بفاصلة
-function parseTechnologies(techStr?: string | null): string[] {
-  if (!techStr) return [];
-  try {
-    return JSON.parse(techStr);
-  } catch {
-    return techStr.split(",").map((item) => item.trim());
+// ✅ دالة آمنة تضمن التعامل مع التقنيات سواء كانت Array جاهزة أو String
+function parseTechnologies(tech: unknown): string[] {
+  if (!tech) return [];
+  if (Array.isArray(tech)) return tech as string[];
+  if (typeof tech === "string") {
+    try {
+      const parsed = JSON.parse(tech);
+      return Array.isArray(parsed) ? parsed : [String(parsed)];
+    } catch {
+      return tech.split(",").map((item) => item.trim());
+    }
   }
+  return [];
 }
 
-export function ProjectsBrowser({ projects }: { projects: Project[] }) {
+// ✅ إعادة تعريف نوع الـ Project داخل المكون لضمان التوافق مع string[]
+type ProjectWithArrayTech = Omit<Project, "technologies"> & {
+  technologies: string[] | string;
+};
+
+export function ProjectsBrowser({ projects }: { projects: ProjectWithArrayTech[] }) {
   const { dict } = useI18n();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("all");
@@ -79,6 +89,7 @@ export function ProjectsBrowser({ projects }: { projects: Project[] }) {
       ) : (
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p, i) => (
+            // @ts-expect-error - التجاوز الآمن لو كان ProjectCard يزال يتوقع technologies كـ string
             <ProjectCard key={p.id} project={p} index={i} />
           ))}
         </div>
