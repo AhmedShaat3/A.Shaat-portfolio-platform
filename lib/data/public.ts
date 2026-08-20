@@ -16,67 +16,25 @@ import {
   testimonials,
   galleryImages,
   statistics,
-  sectionContent,
 } from "@/db/schema";
 import { eq, desc, asc, and } from "drizzle-orm";
-import type { ContentMap } from "@/lib/types";
 
-// --- دوال الأمان للـ JSON ---
-
-// دالة آمنة لمحتوى الأقسام
-function safeParseJsonContent(rawContent: unknown): ContentMap {
-  if (!rawContent) return {};
-  if (typeof rawContent === "object") return rawContent as ContentMap;
-  if (typeof rawContent === "string") {
-    try {
-      return JSON.parse(rawContent) as ContentMap;
-    } catch {
-      return {};
-    }
-  }
-  return {};
-}
-
-// دالة آمنة خاصة بتقنيات المشاريع (لأنها تسبب المشكلة الأكبر)
+// --- دالة الأمان لتقنيات المشاريع ---
 function safeParseTechnologies(rawTech: unknown): string[] {
   if (!rawTech) return [];
   if (typeof rawTech === "string") {
     try {
-      // محاولة تحويلها كـ JSON
-      return JSON.parse(rawTech);
+      const parsed = JSON.parse(rawTech);
+      return Array.isArray(parsed) ? parsed : [String(parsed)];
     } catch {
-      // في حال كانت نصاً عادياً مفصولاً بفواصل
       return rawTech.split(",").map((t) => t.trim());
     }
   }
+  if (Array.isArray(rawTech)) return rawTech as string[];
   return [];
 }
 
 // --- دوال قاعدة البيانات ---
-
-export async function getSectionContent(
-  sectionId: string,
-  locale: string
-): Promise<ContentMap> {
-  try {
-    const [row] = await db
-      .select()
-      .from(sectionContent)
-      .where(
-        and(
-          eq(sectionContent.sectionId, sectionId),
-          eq(sectionContent.locale, locale)
-        )
-      )
-      .limit(1);
-
-    if (!row || !row.content) return {};
-    return safeParseJsonContent(row.content);
-  } catch (error) {
-    console.error(`Error fetching section content for ${sectionId}:`, error);
-    return {};
-  }
-}
 
 export async function getProfile() {
   const [row] = await db.select().from(profile).limit(1);
@@ -145,7 +103,6 @@ export async function getVisibleEducation() {
 }
 
 export async function getPublishedProjects() {
-  // ✅ أخذ المشاريع، ثم تحويل تقنياتها لصفيف آمن
   const rawProjects = await db
     .select()
     .from(projects)
@@ -154,7 +111,6 @@ export async function getPublishedProjects() {
 
   return rawProjects.map((p) => ({
     ...p,
-    // تحويل التقنيات لصفيف آمن
     technologies: safeParseTechnologies(p.technologies),
   }));
 }
@@ -189,7 +145,6 @@ export async function getProjectBySlug(slug: string) {
 
   return { 
     ...row, 
-    // ✅ تحويل التقنيات لصفيف آمن
     technologies: safeParseTechnologies(row.technologies),
     images 
   };
