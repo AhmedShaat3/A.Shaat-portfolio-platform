@@ -38,16 +38,21 @@ export default async function ProjectDetailPage({
   if (!project) notFound();
   recordProjectView(project.id);
 
-  // ✅ التعديل هنا: project.technologies أصبحت string[] جاهزة ومحللة مسبقاً
+  // ✅ حل آمن لـ technologies (موجود بالفعل)
   const technologies: string[] = Array.isArray(project.technologies)
     ? project.technologies
     : [];
 
-  const stats: Array<{ label: string; value: string }> = project.stats
-    ? typeof project.stats === "string"
-      ? JSON.parse(project.stats)
-      : project.stats
-    : [];
+  // ✅ حل آمن 100% لـ stats باستخدام try/catch
+  const stats: Array<{ label: string; value: string }> = (() => {
+    if (!project.stats) return [];
+    if (typeof project.stats !== "string") return project.stats;
+    try {
+      return JSON.parse(project.stats);
+    } catch {
+      return [];
+    }
+  })();
 
   const jsonLd = {
     "@context": "https://schema.org",
