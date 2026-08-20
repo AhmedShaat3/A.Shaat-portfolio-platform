@@ -10,7 +10,20 @@ import type { Project } from "@/lib/types";
 
 export function ProjectCard({ project, index = 0 }: { project: Project; index?: number }) {
   const { locale, dict } = useI18n();
-  const tech: string[] = project.technologies ? JSON.parse(project.technologies) : [];
+  
+  // ✅ FIX: Safe JSON Parsing to prevent app/build crashes
+  let tech: string[] = [];
+  try {
+    tech = project.technologies ? JSON.parse(project.technologies) : [];
+  } catch (e) {
+    // If JSON parsing fails (e.g. because it's an empty string), default to empty array silently
+    tech = [];
+  }
+
+  // ✅ FIX: Provide a default safe value for text content
+  const categoryText = project.category || "Project";
+  const titleText = project.title || "Untitled";
+  const descriptionText = project.shortDescription || "";
 
   return (
     <motion.div
@@ -27,6 +40,7 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
               src={project.mainImageUrl}
               alt={project.title}
               fill
+              unoptimized
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
@@ -43,17 +57,17 @@ export function ProjectCard({ project, index = 0 }: { project: Project; index?: 
 
         <div className="flex flex-1 flex-col p-5">
           <span className="font-mono text-[11px] uppercase tracking-widest text-pub-accent">
-            {project.category}
+            {categoryText}
           </span>
           <h3 className="mt-2 flex items-center gap-1.5 font-display text-lg font-semibold text-pub-text">
-            {project.title}
+            {titleText}
             <ArrowUpRight
               size={16}
               className="text-pub-text-faint transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-pub-accent"
             />
           </h3>
           <p className="mt-2 flex-1 text-sm text-pub-text-muted line-clamp-2">
-            {project.shortDescription}
+            {descriptionText}
           </p>
           {tech.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-1.5">

@@ -50,10 +50,24 @@ export function Hero({
   content: ContentMap;
 }) {
   const { dict } = useI18n();
-  const phrases: string[] = profile?.typingPhrases
-    ? JSON.parse(profile.typingPhrases)
-    : [];
+  
+  // ✅ FIX 1: Safe JSON Parsing (Prevents build/runtime crashes)
+  let phrases: string[] = [];
+  try {
+    phrases = profile?.typingPhrases ? JSON.parse(profile.typingPhrases) : [];
+  } catch (e) {
+    console.warn("Failed to parse typing phrases JSON");
+  }
+  
   const typed = useTypingEffect(phrases);
+
+  // ✅ FIX 2: Extract avatar initials safely (Prevents "Cannot read properties of undefined")
+  const getInitials = () => {
+    const name = profile?.fullName || "BB";
+    const parts = name.trim().split(" ");
+    if (parts.length >= 2) return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    return name.substring(0, 2).toUpperCase();
+  };
 
   return (
     <section className="relative overflow-hidden border-b border-pub-border">
@@ -187,16 +201,13 @@ export function Hero({
                   src={profile.avatarUrl}
                   alt={profile.fullName}
                   fill
+                  unoptimized
                   className="object-cover"
                   priority
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center font-display text-5xl font-semibold text-pub-text-faint">
-                  {(profile?.fullName || "BB")
-                    .split(" ")
-                    .map((w) => w[0])
-                    .slice(0, 2)
-                    .join("")}
+                  {getInitials()}
                 </div>
               )}
             </div>

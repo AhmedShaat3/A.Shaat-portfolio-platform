@@ -29,8 +29,9 @@ export function CertificateGrid({ certificates }: { certificates: Certificate[] 
               {cert.imageUrl ? (
                 <Image
                   src={cert.imageUrl}
-                  alt={cert.title}
+                  alt={cert.title || "Certificate image"}
                   fill
+                  unoptimized
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               ) : (
@@ -41,11 +42,12 @@ export function CertificateGrid({ certificates }: { certificates: Certificate[] 
             </div>
             <div className="p-5">
               <h3 className="font-display text-base font-semibold text-pub-text">
-                {cert.title}
+                {cert.title || "Untitled Certificate"}
               </h3>
               <p className="mt-1 text-sm text-pub-accent">{cert.organization}</p>
               <p className="mt-1 font-mono text-xs text-pub-text-faint">
-                {dict.certificates.issued}: {cert.date}
+                {/* ✅ FIX: Added a fallback for the date, and safely accessed dict */}
+                {dict.certificates?.issued || "Issued"}: {cert.date || "N/A"}
               </p>
             </div>
           </motion.button>
@@ -74,58 +76,69 @@ export function CertificateGrid({ certificates }: { certificates: Certificate[] 
                 type="button"
                 onClick={() => setActive(null)}
                 aria-label="Close"
-                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-pub-border text-pub-text-muted hover:text-pub-text"
+                className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-pub-border text-pub-text-muted transition-colors hover:bg-pub-surface-2 hover:text-pub-text"
               >
                 <X size={16} />
               </button>
 
               {active.imageUrl && (
                 <div className="relative mb-5 aspect-[4/3] w-full overflow-hidden rounded-xl bg-pub-surface-2">
-                  <Image src={active.imageUrl} alt={active.title} fill className="object-contain" />
+                  <Image 
+                    src={active.imageUrl} 
+                    alt={active.title || "Certificate image"} 
+                    fill 
+                    unoptimized 
+                    className="object-contain" 
+                  />
                 </div>
               )}
 
               <h3 className="font-display text-xl font-semibold text-pub-text">
-                {active.title}
+                {active.title || "Untitled"}
               </h3>
               <p className="mt-1 text-pub-accent">{active.organization}</p>
+              
               {active.description && (
                 <p className="mt-3 text-sm text-pub-text-muted">{active.description}</p>
               )}
+              
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <dt className="font-mono text-xs text-pub-text-faint">
-                    {dict.certificates.issued}
+                    {/* ✅ FIX: Safe dictionary access */}
+                    {dict.certificates?.issued || "Issued"}
                   </dt>
-                  <dd className="text-pub-text">{active.date}</dd>
+                  <dd className="text-pub-text">{active.date || "N/A"}</dd>
                 </div>
                 {active.certificateId && (
                   <div>
                     <dt className="font-mono text-xs text-pub-text-faint">
-                      {dict.certificates.credentialId}
+                      {/* ✅ FIX: Safe dictionary access */}
+                      {dict.certificates?.credentialId || "Credential ID"}
                     </dt>
                     <dd className="text-pub-text">{active.certificateId}</dd>
                   </div>
                 )}
               </dl>
+              
               <div className="mt-5 flex flex-wrap gap-3">
                 {active.verificationUrl && (
                   <a
                     href={active.verificationUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full bg-pub-accent px-4 py-2 text-sm font-semibold text-black"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-pub-accent px-4 py-2 text-sm font-semibold text-black transition-transform hover:scale-[1.03]"
                   >
-                    <ShieldCheck size={14} /> {dict.certificates.verify}
+                    <ShieldCheck size={14} /> {dict.certificates?.verify || "Verify"}
                   </a>
                 )}
                 {active.pdfUrl && (
                   <a
                     href={active.pdfUrl}
                     download
-                    className="inline-flex items-center gap-1.5 rounded-full border border-pub-border px-4 py-2 text-sm font-semibold text-pub-text hover:border-pub-accent"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-pub-border px-4 py-2 text-sm font-semibold text-pub-text transition-colors hover:border-pub-accent hover:text-pub-accent"
                   >
-                    <Download size={14} /> {dict.certificates.download}
+                    <Download size={14} /> {dict.certificates?.download || "Download"}
                   </a>
                 )}
                 {active.imageUrl && (
@@ -133,9 +146,9 @@ export function CertificateGrid({ certificates }: { certificates: Certificate[] 
                     href={active.imageUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 rounded-full border border-pub-border px-4 py-2 text-sm font-semibold text-pub-text hover:border-pub-accent"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-pub-border px-4 py-2 text-sm font-semibold text-pub-text transition-colors hover:border-pub-accent hover:text-pub-accent"
                   >
-                    <ExternalLink size={14} /> {dict.certificates.preview}
+                    <ExternalLink size={14} /> {dict.certificates?.preview || "Preview"}
                   </a>
                 )}
               </div>

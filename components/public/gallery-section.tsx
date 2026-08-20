@@ -15,6 +15,8 @@ export function GallerySection({
   content: ContentMap;
 }) {
   const [active, setActive] = useState<GalleryImage | null>(null);
+  
+  // Early return if no images exist
   if (images.length === 0) return null;
 
   return (
@@ -44,6 +46,7 @@ export function GallerySection({
                 alt={img.altText || img.caption || "Gallery image"}
                 width={480}
                 height={360}
+                unoptimized // ✅ Kept this as it likely uses a CDN/External URL
                 className="h-auto w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               {img.caption && (
@@ -56,6 +59,7 @@ export function GallerySection({
         </div>
       </div>
 
+      {/* ✅ Lightbox Modal */}
       <AnimatePresence>
         {active && (
           <motion.div
@@ -65,14 +69,19 @@ export function GallerySection({
             onClick={() => setActive(null)}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
           >
+            {/* ✅ Added onClick(e) to prevent closing when clicking the backdrop logic inside the button */}
             <button
               type="button"
-              onClick={() => setActive(null)}
-              aria-label="Close"
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white"
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent this from hitting the backdrop
+                setActive(null);
+              }}
+              aria-label="Close gallery preview"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white transition-colors hover:bg-white/10"
             >
               <X size={18} />
             </button>
+            
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
@@ -84,10 +93,17 @@ export function GallerySection({
                 alt={active.altText || active.caption || "Gallery image"}
                 width={1200}
                 height={900}
+                unoptimized // ✅ Kept this to match the external image behavior
                 className="max-h-[85vh] w-auto rounded-xl object-contain"
               />
               {active.caption && (
-                <p className="mt-3 text-center text-sm text-white/80">{active.caption}</p>
+                <motion.p 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-3 text-center text-sm text-white/80"
+                >
+                  {active.caption}
+                </motion.p>
               )}
             </motion.div>
           </motion.div>
