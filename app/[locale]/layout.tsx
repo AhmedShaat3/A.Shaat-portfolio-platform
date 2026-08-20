@@ -34,7 +34,8 @@ export async function generateMetadata({
   return {
     title: { default: title, template: `%s · ${title}` },
     description,
-    keywords: settings?.keywords?.split(",").map((k) => k.trim()),
+    // ✅ تم إصلاح الخطأ هنا بإضافة (k: string)
+    keywords: settings?.keywords?.split(",").map((k: string) => k.trim()),
     authors: settings?.author ? [{ name: settings.author }] : undefined,
     metadataBase: settings?.canonicalUrl
       ? new URL(settings.canonicalUrl)
