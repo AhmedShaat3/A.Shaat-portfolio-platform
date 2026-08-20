@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { UploadCloud, X, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import type { StorageFolder } from "@/lib/storage";
@@ -77,9 +76,9 @@ export function ImageUploader({
               <FileText size={18} /> PDF uploaded
             </div>
           ) : (
-            <div className="relative h-40 w-full bg-adm-surface-2">
-              <Image src={value} alt="Uploaded" fill className="object-contain" />
-            </div>
+           <div className="relative flex h-40 w-full items-center justify-center overflow-hidden bg-adm-surface-2">
+             <img src={value} alt="Uploaded" className="h-full w-full object-contain" />
+           </div>
           )}
           <button
             type="button"
