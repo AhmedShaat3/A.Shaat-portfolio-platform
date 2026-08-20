@@ -11,7 +11,8 @@ import { RichTextEditor } from "./ui/rich-text-editor";
 import { TagListEditor } from "./ui/tag-list-editor";
 import { ImageUploader } from "./ui/image-uploader";
 import { createProject, updateProject } from "@/lib/actions/admin/projects";
-import type { Project } from "@/lib/types";
+// ✅ التغيير 1: استيراد AdminProject بدلاً من Project
+import type { AdminProject } from "@/lib/types";
 
 const CATEGORIES = [
   "Cybersecurity",
@@ -56,20 +57,33 @@ interface FormState {
   published: boolean;
 }
 
-function fromProject(p?: Project): FormState {
+// ✅ التغيير 2: تعديل دالة fromProject لتقبل AdminProject
+function fromProject(p?: AdminProject): FormState {
+  // تحويل technologies من نص (string) إلى مصفوفة (string[]) بأمان
+  let technologies: string[] = [];
+  if (p?.technologies) {
+    try { technologies = JSON.parse(p.technologies); } catch { technologies = []; }
+  }
+
+  // تحويل stats من نص (string) إلى مصفوفة (array) بأمان
+  let stats: { label: string; value: string }[] = [];
+  if (p?.stats) {
+    try { stats = JSON.parse(p.stats); } catch { stats = []; }
+  }
+
   return {
     title: p?.title ?? "",
     slug: p?.slug ?? "",
     shortDescription: p?.shortDescription ?? "",
     fullDescription: p?.fullDescription ?? "",
     category: p?.category ?? CATEGORIES[0],
-    technologies: p?.technologies ? JSON.parse(p.technologies) : [],
+    technologies, // استخدام القيمة المحولة
     mainImageUrl: p?.mainImageUrl ?? "",
     githubUrl: p?.githubUrl ?? "",
     liveUrl: p?.liveUrl ?? "",
     featured: p?.featured ?? false,
     status: (p?.status as FormState["status"]) ?? "completed",
-    stats: p?.stats ? JSON.parse(p.stats) : [],
+    stats, // استخدام القيمة المحولة
     challenges: p?.challenges ?? "",
     solution: p?.solution ?? "",
     results: p?.results ?? "",
@@ -80,7 +94,8 @@ function fromProject(p?: Project): FormState {
   };
 }
 
-export function ProjectEditor({ project }: { project?: Project }) {
+// ✅ التغيير 3: تعديل دالة props لتقبل AdminProject
+export function ProjectEditor({ project }: { project?: AdminProject }) {
   const [form, setForm] = useState<FormState>(fromProject(project));
   const [slugTouched, setSlugTouched] = useState(!!project);
   const [pending, startTransition] = useTransition();
@@ -97,7 +112,14 @@ export function ProjectEditor({ project }: { project?: Project }) {
   }
 
   function save(publish?: boolean) {
-    const payload = { ...form, published: publish ?? form.published };
+    // ✅ التغيير 4: تحويل المصفوفات إلى نصوص JSON قبل إرسالها للخادم
+    const payload = { 
+      ...form, 
+      published: publish ?? form.published,
+      technologies: JSON.stringify(form.technologies), // إعادة تحويلها لنص
+      stats: JSON.stringify(form.stats),               // إعادة تحويلها لنص
+    };
+
     startTransition(async () => {
       const result = isNew
         ? await createProject(payload)

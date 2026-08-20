@@ -11,17 +11,10 @@ import type { Project } from "@/lib/types";
 export function ProjectCard({ project, index = 0 }: { project: Project; index?: number }) {
   const { locale, dict } = useI18n();
   
-  // ✅ FIX: Safe JSON Parsing to prevent app/build crashes
-  let tech: string[] = [];
-  if (project.technologies) {
-    try {
-      tech = JSON.parse(project.technologies);
-    } catch {
-      tech = project.technologies.split(",").map((t) => t.trim());
-    }
-  }
+  // ✅ صار الأمر بسيطاً جداً لأن project.technologies أصبحت مصفوفة string[] قادمة من الخادم
+  const tech = project.technologies || [];
 
-  // ✅ FIX: Provide a default safe value for text content
+  // ✅ القيم الافتراضية الآمنة
   const categoryText = project.category || "Project";
   const titleText = project.title || "Untitled";
   const descriptionText = project.shortDescription || "";
