@@ -19,6 +19,12 @@ import type { StorageAdapter } from "./types";
  */
 
 function resolveAdapter(): StorageAdapter {
+  // Force Vercel Blob in production
+  if (process.env.NODE_ENV === "production") {
+    console.log("🔍 Production mode: forcing vercel-blob");
+    return vercelBlobAdapter;
+  }
+
   const driver = process.env.STORAGE_DRIVER ?? "local";
 
   switch (driver) {
@@ -38,6 +44,3 @@ function resolveAdapter(): StorageAdapter {
       return localStorageAdapter;
   }
 }
-
-export const storage = resolveAdapter();
-export * from "./types";
