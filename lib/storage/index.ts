@@ -44,3 +44,6 @@ function resolveAdapter(): StorageAdapter {
       return localStorageAdapter;
   }
 }
+
+export const storage = resolveAdapter();
+export * from "./types";
