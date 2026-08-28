@@ -10,7 +10,6 @@ export const contactMessageSchema = z.object({
   email: z.string().trim().email("Enter a valid email."),
   subject: z.string().trim().max(200).optional().or(z.literal("")),
   message: z.string().trim().min(10, "Message is too short.").max(5000),
-  // Honeypot field — real users never fill this in.
   company: z.string().max(0, "Spam detected.").optional().or(z.literal("")),
 });
 
@@ -71,13 +70,7 @@ export const educationSchema = z.object({
   major: z.string().trim().optional().or(z.literal("")),
   gpa: z.string().trim().optional().or(z.literal("")),
   startYear: z.string().trim().min(1),
-  endYear: z.string().trim().optional().or(z.literal("")),// ❌ القديم (بيطلب Array)
-technologies: z.array(z.string().trim().min(1)).max(30),
-stats: z.array(projectStatSchema).max(10),
-
-// ✅ الجديد (بيقبل أي حاجة)
-technologies: z.any().default(""),
-stats: z.any().default(""),
+  endYear: z.string().trim().optional().or(z.literal("")),
   coursework: z.array(z.string().trim().min(1)).max(30),
   description: z.string().trim().optional().or(z.literal("")),
   logoUrl: z.string().trim().optional().or(z.literal("")),
@@ -85,6 +78,7 @@ stats: z.any().default(""),
   visible: z.boolean().default(true),
 });
 
+// ✅ projectStatSchema معرف قبل projectSchema
 export const projectStatSchema = z.object({
   label: z.string().trim().min(1),
   value: z.string().trim().min(1),
@@ -100,13 +94,13 @@ export const projectSchema = z.object({
   shortDescription: z.string().trim().optional().or(z.literal("")),
   fullDescription: z.string().optional().or(z.literal("")),
   category: z.string().trim().min(1),
-  technologies: z.array(z.string().trim().min(1)).max(30),
+  technologies: z.any().default(""),  // ✅ تقبل أي شيء
   mainImageUrl: z.string().trim().optional().or(z.literal("")),
   githubUrl: z.string().trim().url().optional().or(z.literal("")),
   liveUrl: z.string().trim().url().optional().or(z.literal("")),
   featured: z.boolean().default(false),
   status: z.enum(["completed", "in-progress", "archived"]).default("completed"),
-  stats: z.array(projectStatSchema).max(10),
+  stats: z.any().default(""),  // ✅ تقبل أي شيء
   challenges: z.string().optional().or(z.literal("")),
   solution: z.string().optional().or(z.literal("")),
   results: z.string().optional().or(z.literal("")),
