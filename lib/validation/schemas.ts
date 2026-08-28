@@ -71,7 +71,13 @@ export const educationSchema = z.object({
   major: z.string().trim().optional().or(z.literal("")),
   gpa: z.string().trim().optional().or(z.literal("")),
   startYear: z.string().trim().min(1),
-  endYear: z.string().trim().optional().or(z.literal("")),
+  endYear: z.string().trim().optional().or(z.literal("")),// ❌ القديم (بيطلب Array)
+technologies: z.array(z.string().trim().min(1)).max(30),
+stats: z.array(projectStatSchema).max(10),
+
+// ✅ الجديد (بيقبل أي حاجة)
+technologies: z.any().default(""),
+stats: z.any().default(""),
   coursework: z.array(z.string().trim().min(1)).max(30),
   description: z.string().trim().optional().or(z.literal("")),
   logoUrl: z.string().trim().optional().or(z.literal("")),
